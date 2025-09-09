@@ -48,3 +48,27 @@ jobs:
     - name: Deploy to staging
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: echo "Deployment to staging would happen here"
+
+  ai-app-build:
+      runs-on: ubuntu-latest
+      needs: build  # Run after console app build
+  
+      steps:
+      - uses: actions/checkout@v4
+  
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+  
+      - name: Install .NET Aspire workload
+        run: dotnet workload install aspire
+    
+      - name: Restore AI App
+        run: dotnet restore src/AIChat/**/*.csproj
+  
+      - name: Build AI App
+        run: dotnet build src/AIChat/**/*.csproj --no-restore --configuration Release
+  
+      - name: Publish AI App
+        run: dotnet publish src/AIChat/**/*.csproj --no-build --configuration Release
